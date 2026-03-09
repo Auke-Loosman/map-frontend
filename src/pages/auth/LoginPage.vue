@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '../../composables/useAuth'
 
 const email = ref('')
 const password = ref('')
 
-function login() {
-  console.log(email.value, password.value)
+const { login } = useAuth()
+const router = useRouter()
+
+async function submit() {
+  await login(email.value, password.value)
+
+  router.push('/')
 }
 </script>
 
@@ -21,7 +28,7 @@ function login() {
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="primary" @click="login"> Login </v-btn>
+        <v-btn color="primary" @click="submit"> Login </v-btn>
       </v-card-actions>
     </v-card>
   </v-container>

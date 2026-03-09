@@ -16,7 +16,18 @@ const { user, logout } = useAuth()
       </v-card-text>
 
       <v-card-actions>
-        <v-btn v-if="user" @click="logout"> Logout </v-btn>
+        <v-btn
+          v-if="user"
+          variant="text"
+          @click="
+            () => {
+              logout()
+              $router.push('/login')
+            }
+          "
+        >
+          Logout
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-container>

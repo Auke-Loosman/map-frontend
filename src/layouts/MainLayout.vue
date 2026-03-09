@@ -19,8 +19,8 @@ function handleLogout() {
       <v-spacer />
 
       <template v-if="!user">
-        <v-btn variant="text" to="/login"> Login </v-btn>
-        <v-btn variant="text" to="/register"> Register </v-btn>
+        <v-btn variant="text" :to="'/login'"> Login </v-btn>
+        <v-btn variant="text" :to="'/register'"> Register </v-btn>
       </template>
 
       <template v-else>

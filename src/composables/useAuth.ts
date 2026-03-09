@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 import * as AuthApi from '../api/AuthApi'
+import type { User } from '../types/User'
 
 const token = ref<string | null>(localStorage.getItem('token'))
-const user = ref<any>(JSON.parse(localStorage.getItem('user') || 'null'))
+
+const user = ref<User | null>(JSON.parse(localStorage.getItem('user') || 'null'))
 
 export function useAuth() {
   async function login(email: string, password: string) {

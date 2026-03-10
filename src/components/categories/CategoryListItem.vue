@@ -14,30 +14,48 @@ const emit = defineEmits<{
 const editing = ref(false)
 const name = ref(props.category.name)
 
+function startEdit() {
+  name.value = props.category.name
+  editing.value = true
+}
+
 function save() {
   emit('update', props.category.id, name.value)
   editing.value = false
 }
+
+function remove() {
+  if (!confirm('Delete this category?')) return
+  emit('delete', props.category.id)
+}
 </script>
 
 <template>
-  <v-list-item class="d-flex align-center">
-    <template v-if="editing">
-      <v-text-field v-model="name" density="compact" class="mr-4" />
+  <v-list-item>
+    <!-- NORMAL MODE -->
+    <v-list-item-title v-if="!editing">
+      {{ props.category.name }}
+    </v-list-item-title>
 
-      <v-btn color="primary" size="small" @click="save"> Save </v-btn>
-    </template>
+    <!-- EDIT MODE -->
+    <v-text-field v-else v-model="name" density="compact" hide-details />
 
-    <template v-else>
-      <span>
-        {{ category.name }}
-      </span>
+    <template #append>
+      <div class="d-flex ga-1">
+        <!-- NORMAL ACTIONS -->
+        <template v-if="!editing">
+          <v-btn icon="mdi-pencil" variant="text" size="small" @click="startEdit" />
 
-      <v-spacer />
+          <v-btn icon="mdi-delete" variant="text" size="small" color="error" @click="remove" />
+        </template>
 
-      <v-btn icon size="small" variant="text" @click="editing = true"> ✏️ </v-btn>
+        <!-- EDIT ACTIONS -->
+        <template v-else>
+          <v-btn icon="mdi-check" variant="text" size="small" color="primary" @click="save" />
 
-      <v-btn icon size="small" variant="text" @click="emit('delete', category.id)"> 🗑️ </v-btn>
+          <v-btn icon="mdi-close" variant="text" size="small" @click="editing = false" />
+        </template>
+      </div>
     </template>
   </v-list-item>
 </template>

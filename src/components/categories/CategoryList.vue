@@ -13,10 +13,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <v-card>
-    <v-card-title> Categories </v-card-title>
+  <v-card elevation="3">
+    <v-card-title class="text-h6"> Categories </v-card-title>
 
-    <v-list>
+    <v-divider />
+
+    <v-list lines="one">
       <CategoryListItem
         v-for="category in categories"
         :key="category.id"

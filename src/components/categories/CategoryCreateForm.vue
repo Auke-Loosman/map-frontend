@@ -16,13 +16,21 @@ function submit() {
 </script>
 
 <template>
-  <v-card class="mb-6">
-    <v-card-title> Create Category </v-card-title>
+  <v-card elevation="3">
+    <v-card-title class="text-h6"> Create Category </v-card-title>
 
-    <v-card-text class="d-flex align-center">
-      <v-text-field label="Category name" v-model="name" class="mr-4" />
+    <v-card-text>
+      <div class="d-flex align-center">
+        <v-text-field
+          label="Category name"
+          v-model="name"
+          hide-details
+          density="comfortable"
+          class="flex-grow-1 mr-4"
+        />
 
-      <v-btn color="primary" @click="submit"> Create </v-btn>
+        <v-btn color="primary" prepend-icon="mdi-plus" @click="submit"> Create </v-btn>
+      </div>
     </v-card-text>
   </v-card>
 </template>

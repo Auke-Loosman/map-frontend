@@ -2,35 +2,30 @@
 import { ref } from 'vue'
 
 const emit = defineEmits<{
-  (e: 'create', name: string): void
+  (e: 'create', name: string, color: string): void
 }>()
 
 const name = ref('')
+const color = ref('#888888')
 
-function submit() {
+function createCategory() {
   if (!name.value) return
 
-  emit('create', name.value)
+  emit('create', name.value, color.value)
+
   name.value = ''
+  color.value = '#888888'
 }
 </script>
 
 <template>
-  <v-card elevation="3">
-    <v-card-title class="text-h6"> Create Category </v-card-title>
-
+  <v-card class="mb-4">
     <v-card-text>
-      <div class="d-flex align-center">
-        <v-text-field
-          label="Category name"
-          v-model="name"
-          hide-details
-          density="comfortable"
-          class="flex-grow-1 mr-4"
-        />
+      <v-text-field v-model="name" label="Category name" variant="outlined" />
 
-        <v-btn color="primary" prepend-icon="mdi-plus" @click="submit"> Create </v-btn>
-      </div>
+      <v-text-field v-model="color" label="Color" type="color" variant="outlined" />
+
+      <v-btn color="primary" class="mt-2" @click="createCategory"> Create Category </v-btn>
     </v-card-text>
   </v-card>
 </template>

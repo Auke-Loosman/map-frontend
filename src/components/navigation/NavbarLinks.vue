@@ -6,6 +6,8 @@ const { user } = useAuth()
 
 <template>
   <div class="d-flex ga-2">
-    <v-btn v-if="user" variant="text" to="/categories"> Categories </v-btn>
+    <v-btn to="/" variant="text">Home</v-btn>
+    <v-btn to="/map" variant="text">Map</v-btn>
+    <v-btn to="/categories" variant="text">Categories</v-btn>
   </div>
 </template>

@@ -11,24 +11,24 @@ export function useCategories() {
   async function loadCategories() {
     if (!user.value) return
 
-    categories.value = await CategoryApi.fetchCategories(user.value.id)
+    categories.value = await CategoryApi.getCategories()
   }
 
-  async function addCategory(name: string) {
+  async function addCategory(name: string, color: string) {
     if (!user.value) return
 
-    const category = await CategoryApi.createCategory(name, user.value.id)
+    const category = await CategoryApi.createCategory(name, color)
 
     categories.value.push(category)
   }
 
-  async function updateCategory(id: string, name: string) {
-    await CategoryApi.updateCategory(id, name)
+  async function updateCategory(id: string, name: string, color: string) {
+    const updated = await CategoryApi.updateCategory(id, name, color)
 
-    const category = categories.value.find((c) => c.id === id)
+    const index = categories.value.findIndex((c) => c.id === id)
 
-    if (category) {
-      category.name = name
+    if (index !== -1) {
+      categories.value[index] = updated
     }
   }
 

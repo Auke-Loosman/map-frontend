@@ -17,9 +17,12 @@ const dialogOpen = ref(false)
 const clickedLat = ref<number | null>(null)
 const clickedLng = ref<number | null>(null)
 
-onMounted(() => {
-  loadItems()
-  loadCategories()
+onMounted(async () => {
+  await loadCategories()
+  await loadItems()
+
+  // activate all categories initially
+  activeCategories.value = categories.value.map((c) => c.id)
 })
 
 function toggleCategory(id: string) {
@@ -51,13 +54,7 @@ async function handleCreate(payload: { name: string; description: string; catego
 }
 
 const filteredItems = computed(() => {
-  if (activeCategories.value.length === 0) {
-    return items.value
-  }
-
-  return items.value.filter(
-    (item) => item.categoryId !== undefined && activeCategories.value.includes(item.categoryId),
-  )
+  return items.value.filter((item) => activeCategories.value.includes(item.categoryId))
 })
 </script>
 

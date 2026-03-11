@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Category } from '../../types/Category'
 
-const props = defineProps<{
+defineProps<{
   categories: Category[]
   activeCategories: string[]
 }>()
@@ -9,6 +9,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'toggle-category', id: string): void
 }>()
+
+function toggle(id: string) {
+  emit('toggle-category', id)
+}
 </script>
 
 <template>
@@ -19,18 +23,19 @@ const emit = defineEmits<{
       v-for="category in categories"
       :key="category.id"
       class="legend-item"
-      @click="emit('toggle-category', category.id)"
+      @click="toggle(category.id)"
     >
       <div class="legend-color" :style="{ background: category.color }" />
 
-      <span class="legend-label">
+      <div class="legend-name">
         {{ category.name }}
-      </span>
+      </div>
 
       <v-checkbox
         :model-value="activeCategories.includes(category.id)"
         density="compact"
         hide-details
+        @click.stop="toggle(category.id)"
       />
     </div>
   </div>
@@ -41,33 +46,39 @@ const emit = defineEmits<{
   position: absolute;
   top: 20px;
   right: 20px;
+  width: 220px;
   background: white;
-  padding: 14px;
+  color: #222; /* fixes invisible text */
   border-radius: 8px;
-  width: 200px;
+  padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .legend-title {
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  color: #222;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 6px 0;
   cursor: pointer;
-  padding: 4px 0;
+  color: #222;
 }
 
 .legend-color {
   width: 16px;
   height: 16px;
   border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
-.legend-label {
+.legend-name {
   flex: 1;
+  font-size: 14px;
+  color: #222;
 }
 </style>

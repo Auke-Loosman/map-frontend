@@ -94,7 +94,7 @@ watch(
       markerCluster.addLayer(marker)
     })
   },
-  { deep: true },
+  { immediate: true, deep: true },
 )
 </script>
 

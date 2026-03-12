@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import MapView from '../components/map/MapView.vue'
 import MapLegend from '../components/map/MapLegend.vue'
 import CreateItemDialog from '../components/map/CreateItemDialog.vue'
+import ItemSidebar from '../components/items/ItemSidebar.vue'
 
 import { useItems } from '../composables/useItems'
 import { useCategories } from '../composables/useCategories'
@@ -21,7 +22,6 @@ onMounted(async () => {
   await loadCategories()
   await loadItems()
 
-  // activate all categories initially
   activeCategories.value = categories.value.map((c) => c.id)
 })
 
@@ -75,5 +75,7 @@ const filteredItems = computed(() => {
       :categories="categories"
       @create="handleCreate"
     />
+
+    <ItemSidebar :categories="categories" />
   </v-container>
 </template>

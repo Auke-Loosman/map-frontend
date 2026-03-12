@@ -3,6 +3,8 @@ import { ref, onMounted, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet.markercluster'
 
+import { useItems } from '../../composables/useItems'
+
 import type { Item } from '../../types/Item'
 import type { Category } from '../../types/Category'
 
@@ -19,6 +21,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'map-dblclick', lat: number, lng: number): void
 }>()
+
+const { selectItem } = useItems()
 
 const mapContainer = ref<HTMLDivElement | null>(null)
 
@@ -38,12 +42,6 @@ function createColoredIcon(color: string) {
     "></div>`,
     iconSize: [16, 16],
   })
-}
-
-function renderMetadataHtml(item: Item): string {
-  if (!item.metadata) return ''
-
-  return item.metadata.map((m) => `<div>${m.key}: ${m.value}</div>`).join('')
 }
 
 onMounted(() => {
@@ -80,16 +78,13 @@ watch(
 
       const icon = createColoredIcon(category?.color || '#888')
 
-      const popup = `
-        <div>
-          <strong>${item.name}</strong><br/>
-          <small>${category?.name ?? ''}</small>
-          <p>${item.description}</p>
-          ${renderMetadataHtml(item)}
-        </div>
-      `
+      const marker = L.marker([item.latitude, item.longitude], { icon })
 
-      const marker = L.marker([item.latitude, item.longitude], { icon }).bindPopup(popup)
+      marker.on('click', () => {
+        map.flyTo([item.latitude, item.longitude], map.getZoom())
+
+        selectItem(item)
+      })
 
       markerCluster.addLayer(marker)
     })

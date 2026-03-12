@@ -23,6 +23,25 @@ export function useItems() {
     }
   }
 
+  async function loadItemsInBounds(bounds: {
+    north: number
+    south: number
+    east: number
+    west: number
+  }) {
+    loading.value = true
+    error.value = null
+
+    try {
+      items.value = await ItemApi.getItemsInBounds(bounds)
+    } catch (err) {
+      console.error(err)
+      error.value = 'Failed to load items in bounds'
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function createItem(
     name: string,
     description: string,
@@ -48,18 +67,22 @@ export function useItems() {
     }
   }
 
-  async function updateItem(id: string, name: string, description: string, categoryId: string) {
+  async function updateItem(
+    id: string,
+    name: string,
+    description: string,
+    categoryId: string,
+    metadata: { key: string; value: string }[],
+  ) {
     loading.value = true
     error.value = null
 
     try {
-      const updated = await ItemApi.updateItem(id, name, description, categoryId)
+      await ItemApi.updateItem(id, name, description, categoryId, metadata)
 
-      const index = items.value.findIndex((item) => item.id === id)
+      await loadItems()
 
-      if (index !== -1) {
-        items.value.splice(index, 1, updated)
-      }
+      const updated = items.value.find((i) => i.id === id) || null
 
       if (selectedItem.value?.id === id) {
         selectedItem.value = updated
@@ -110,6 +133,7 @@ export function useItems() {
     loading,
     error,
     loadItems,
+    loadItemsInBounds,
     createItem,
     updateItem,
     deleteItem,

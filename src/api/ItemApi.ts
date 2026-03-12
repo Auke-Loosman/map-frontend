@@ -23,6 +23,26 @@ export async function getItems(): Promise<Item[]> {
   return response.json()
 }
 
+export async function getItemsInBounds(bounds: {
+  north: number
+  south: number
+  east: number
+  west: number
+}): Promise<Item[]> {
+  const response = await fetch(
+    `${API_URL}?bbox=${bounds.west},${bounds.south},${bounds.east},${bounds.north}`,
+    {
+      headers: getAuthHeaders(),
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch items')
+  }
+
+  return response.json()
+}
+
 export async function createItem(
   name: string,
   description: string,
@@ -54,7 +74,8 @@ export async function updateItem(
   name: string,
   description: string,
   categoryId: string,
-): Promise<Item> {
+  metadata: { key: string; value: string }[],
+): Promise<void> {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -62,14 +83,13 @@ export async function updateItem(
       name,
       description,
       categoryId,
+      metadata,
     }),
   })
 
   if (!response.ok) {
     throw new Error('Failed to update item')
   }
-
-  return response.json()
 }
 
 export async function deleteItem(id: string): Promise<void> {

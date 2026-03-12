@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import L from 'leaflet'
+import L, { type LatLngBounds } from 'leaflet'
 import 'leaflet.markercluster'
-
-import { useItems } from '../../composables/useItems'
 
 import type { Item } from '../../types/Item'
 import type { Category } from '../../types/Category'
@@ -20,14 +18,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'map-dblclick', lat: number, lng: number): void
+  (e: 'bounds-changed', bounds: LatLngBounds): void
 }>()
-
-const { selectItem } = useItems()
 
 const mapContainer = ref<HTMLDivElement | null>(null)
 
 let map: L.Map
 let markerCluster: MarkerClusterGroup
+let debounceTimer: number | null = null
 
 function createColoredIcon(color: string) {
   return L.divIcon({
@@ -42,6 +40,16 @@ function createColoredIcon(color: string) {
     "></div>`,
     iconSize: [16, 16],
   })
+}
+
+function emitBoundsDebounced(bounds: LatLngBounds) {
+  if (debounceTimer !== null) {
+    clearTimeout(debounceTimer)
+  }
+
+  debounceTimer = window.setTimeout(() => {
+    emit('bounds-changed', bounds)
+  }, 300)
 }
 
 onMounted(() => {
@@ -64,27 +72,28 @@ onMounted(() => {
   map.on('dblclick', (event: L.LeafletMouseEvent) => {
     emit('map-dblclick', event.latlng.lat, event.latlng.lng)
   })
+
+  map.on('moveend', () => {
+    emitBoundsDebounced(map.getBounds())
+  })
+
+  // initial load
+  emitBoundsDebounced(map.getBounds())
 })
 
 watch(
   () => props.items,
   (items) => {
-    if (!map || !markerCluster) return
+    if (!markerCluster) return
 
     markerCluster.clearLayers()
 
     items.forEach((item) => {
       const category = props.categories.find((c) => c.id === item.categoryId)
 
-      const icon = createColoredIcon(category?.color || '#888')
+      const icon = createColoredIcon(category?.color ?? '#888')
 
       const marker = L.marker([item.latitude, item.longitude], { icon })
-
-      marker.on('click', () => {
-        map.flyTo([item.latitude, item.longitude], map.getZoom())
-
-        selectItem(item)
-      })
 
       markerCluster.addLayer(marker)
     })

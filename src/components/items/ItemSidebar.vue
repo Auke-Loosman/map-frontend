@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import ItemDetailsView from './ItemDetailsView.vue'
 import ItemBasicForm from './ItemBasicForm.vue'
@@ -7,17 +7,23 @@ import ItemBasicForm from './ItemBasicForm.vue'
 import { useItems } from '../../composables/useItems'
 import type { Category } from '../../types/Category'
 
-const { categories } = defineProps<{
+defineProps<{
   categories: Category[]
 }>()
 
-const { selectedItem, clearSelectedItem, updateItem, deleteItem } = useItems()
+const { selectedItem, clearSelectedItem, updateItem, deleteItem, loading } = useItems()
 
 const mode = ref<'view' | 'edit'>('view')
 
-const isOpen = computed(() => selectedItem.value !== null)
+const isOpen = computed({
+  get: () => selectedItem.value !== null,
+  set: (value: boolean) => {
+    if (!value) close()
+  },
+})
 
 function close() {
+  if (loading.value) return
   mode.value = 'view'
   clearSelectedItem()
 }
@@ -26,15 +32,23 @@ function enableEdit() {
   mode.value = 'edit'
 }
 
-function cancelEdit() {
-  mode.value = 'view'
-}
-
-async function handleSave(payload: { name: string; description: string; categoryId: string }) {
+async function handleSave(payload: {
+  name: string
+  description: string
+  categoryId: string
+  metadata: { key: string; value: string }[]
+}) {
   if (!selectedItem.value) return
 
-  await updateItem(selectedItem.value.id, payload.name, payload.description, payload.categoryId)
+  await updateItem(
+    selectedItem.value.id,
+    payload.name,
+    payload.description,
+    payload.categoryId,
+    payload.metadata,
+  )
 
+  // force exit edit mode after save
   mode.value = 'view'
 }
 
@@ -42,13 +56,26 @@ async function handleDelete() {
   if (!selectedItem.value) return
 
   await deleteItem(selectedItem.value.id)
+
   close()
 }
+
+/**
+ * IMPORTANT FIX
+ * If selectedItem changes (after reloadItems),
+ * always reset sidebar to view mode
+ */
+watch(
+  () => selectedItem.value,
+  () => {
+    mode.value = 'view'
+  },
+)
 </script>
 
 <template>
   <v-navigation-drawer v-model="isOpen" location="right" width="380" temporary>
-    <v-card v-if="selectedItem" class="d-flex flex-column" height="100%">
+    <v-card v-if="selectedItem">
       <v-card-title class="d-flex justify-space-between align-center">
         {{ mode === 'view' ? 'Item Details' : 'Edit Item' }}
 
@@ -57,23 +84,20 @@ async function handleDelete() {
 
       <v-divider />
 
-      <div class="flex-grow-1 overflow-y-auto">
-        <ItemDetailsView
-          v-if="mode === 'view'"
-          :item="selectedItem"
-          :categories="categories"
-          @edit="enableEdit"
-          @delete="handleDelete"
-        />
+      <ItemDetailsView
+        v-if="mode === 'view'"
+        :item="selectedItem"
+        :categories="categories"
+        @edit="enableEdit"
+        @delete="handleDelete"
+      />
 
-        <ItemBasicForm
-          v-if="mode === 'edit'"
-          :item="selectedItem"
-          :categories="categories"
-          @save="handleSave"
-          @cancel="cancelEdit"
-        />
-      </div>
+      <ItemBasicForm
+        v-if="mode === 'edit'"
+        :item="selectedItem"
+        :categories="categories"
+        @save="handleSave"
+      />
     </v-card>
   </v-navigation-drawer>
 </template>

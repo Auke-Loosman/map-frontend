@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import type { LatLngBounds } from 'leaflet'
 
 import MapView from '../components/map/MapView.vue'
 import MapLegend from '../components/map/MapLegend.vue'
@@ -9,7 +10,9 @@ import ItemSidebar from '../components/items/ItemSidebar.vue'
 import { useItems } from '../composables/useItems'
 import { useCategories } from '../composables/useCategories'
 
-const { items, loadItems, createItem } = useItems()
+import type { Item } from '../types/Item'
+
+const { items, loadItemsInBounds, createItem } = useItems()
 const { categories, loadCategories } = useCategories()
 
 const activeCategories = ref<string[]>([])
@@ -20,10 +23,16 @@ const clickedLng = ref<number | null>(null)
 
 onMounted(async () => {
   await loadCategories()
-  await loadItems()
-
-  activeCategories.value = categories.value.map((c) => c.id)
 })
+
+function handleBoundsChanged(bounds: LatLngBounds) {
+  loadItemsInBounds({
+    north: bounds.getNorth(),
+    south: bounds.getSouth(),
+    east: bounds.getEast(),
+    west: bounds.getWest(),
+  })
+}
 
 function toggleCategory(id: string) {
   const index = activeCategories.value.indexOf(id)
@@ -53,14 +62,19 @@ async function handleCreate(payload: { name: string; description: string; catego
   )
 }
 
-const filteredItems = computed(() => {
-  return items.value.filter((item) => activeCategories.value.includes(item.categoryId))
+const filteredItems = computed<Item[]>(() => {
+  return items.value.filter((item: Item) => activeCategories.value.includes(item.categoryId))
 })
 </script>
 
 <template>
   <v-container fluid class="pa-0">
-    <MapView :items="filteredItems" :categories="categories" @map-dblclick="handleMapDoubleClick" />
+    <MapView
+      :items="filteredItems"
+      :categories="categories"
+      @map-dblclick="handleMapDoubleClick"
+      @bounds-changed="handleBoundsChanged"
+    />
 
     <MapLegend
       :categories="categories"

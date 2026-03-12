@@ -3,6 +3,8 @@ import { ref, watch } from 'vue'
 import type { Item } from '../../types/Item'
 import type { Category } from '../../types/Category'
 
+import ItemMetadataEditor from './ItemMetadataEditor.vue'
+
 const props = defineProps<{
   item: Item
   categories: Category[]
@@ -15,6 +17,7 @@ const emit = defineEmits<{
       name: string
       description: string
       categoryId: string
+      metadata: { key: string; value: string }[]
     },
   ): void
   (e: 'cancel'): void
@@ -23,6 +26,7 @@ const emit = defineEmits<{
 const name = ref('')
 const description = ref('')
 const categoryId = ref('')
+const metadata = ref<{ key: string; value: string }[]>([])
 
 watch(
   () => props.item,
@@ -30,6 +34,7 @@ watch(
     name.value = item.name
     description.value = item.description
     categoryId.value = item.categoryId
+    metadata.value = item.metadata ? [...item.metadata] : []
   },
   { immediate: true },
 )
@@ -39,7 +44,12 @@ function handleSave() {
     name: name.value,
     description: description.value,
     categoryId: categoryId.value,
+    metadata: metadata.value,
   })
+}
+
+function updateMetadata(newMetadata: { key: string; value: string }[]) {
+  metadata.value = newMetadata
 }
 </script>
 
@@ -56,6 +66,8 @@ function handleSave() {
       item-value="id"
       label="Category"
     />
+
+    <ItemMetadataEditor :metadata="metadata" @update="updateMetadata" />
   </v-card-text>
 
   <v-divider />
